@@ -1,55 +1,119 @@
-
-
-
-  import React, { Component } from 'react';
-  import FacebookLogin from 'react-facebook-login';
+import React, { Component } from 'react';
+import FacebookLogin from 'react-facebook-login';
+import axios from 'axios';
+import { ROOT_API } from "../static/index"
 import Logined from './Logined';
-  
-  class Facebook extends Component {
+class Facebook extends Component {
 
     state = {
-        isLoggedIn: true,
-        facebookID: '1929382323',
-        userID: '5b9798e2c685d7050ecda54a',
-        name: 'Tân Hoàng Đức Thắng',
-        email: 'Tanhoangducthang@gmail.com',
-        picture: 'https://static.guim.co.uk/sys-images/Guardian/Pix/pictures/2014/4/11/1397210130748/Spring-Lamb.-Image-shot-2-011.jpg'
+        isLoggedIn: 0,
+        userID: null,
+        name: '',
+        email: '',
+        picture: '',
+        user: ""
+    }
+    componentDidMount = () => {
+        this.checkLogin();
     }
 
+    checkLogin = () => {
+        axios.defaults.withCredentials = true;
+        axios.get(`${ROOT_API}/auth/isLogin`)
+            .then((response) => {
+                console.log(response)
+                if (response.data.success == 1) {
+                    this.setState({ isLoggedIn: 1, userID: response.data.user })
+                    this.getUser()
+                }
+                else this.setState({ isLoggedIn: 2 })
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+    getUser = () => {
+        axios.defaults.withCredentials = true;
+        axios.get(`${ROOT_API}/user/${this.state.userID}`)
+            .then((response) => {
+                console.log(response)
+                if (response.data.success == 1) {
+                    this.setState({ user: response.data.user })
+                    this.props.setdata(response.data.user);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+
+    }
+    login = () => {
+        axios.defaults.withCredentials = true;
+        axios.post(`${ROOT_API}/auth/login`, {
+            facebookID: this.state.userID,
+            name: this.state.name,
+            email: this.state.email,
+            avatarUrl: this.state.picture
+        })
+            .then((response) => {
+                console.log(response)
+                this.checkLogin()
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+    logout = () => {
+        // console.log("ok")
+        window.FB.logout();
+        axios.defaults.withCredentials = true;
+        axios.post(`${ROOT_API}/auth/logout`)
+            .then((response) => {
+                console.log(response)
+                this.checkLogin()
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
     responseFacebook = response => {
-        console.log(response);
+        console.log(response)
+        if(response.userID) {
+            // console.log("dm")
+            this.setState({ userID: response.id, name: response.name, email: response.email, picture: response.picture.data.url })
+            this.login()
+        }
     }
 
-    componentClicked = () => console.log("clicked");
 
     render() {
-      let fbContent;
-      
-      if(this.state.isLoggedIn){
-        fbContent = ( <Logined facebookData={this.state} modalShopIsOpen={this.props.modalShopIsOpen} />
-            // <div style={{
-            //     width: '400px',
-            //     padding: '20px'
-            // }}>
-            //     <img src={this.state.picture} alt={this.state.name}/>
-            //     <h2>Welcome {this.state.name}</h2>
-            // </div>
-        );
-      }else{
-          fbContent = (<FacebookLogin
-            appId="296596617820093"
-            autoLoad={true}
-            fields="name,email,picture"
-            onClick={this.componentClicked}
-            callback={this.responseFacebook} />);
-      }
+        let fbContent;
+        if (this.state.isLoggedIn == 1) {
+            fbContent = (
+                <div>
+                    {(this.state.isLoggedIn == 1) ? <Logined fbLogout={this.logout} userData={this.props.userData}  modalShopIsOpen={this.props.modalShopIsOpen} /> : ''}
+                </div>
+            );
+        }
+        else if ((this.state.isLoggedIn == 2)) {
+            fbContent = (<FacebookLogin
+                appId="452497568573549"
+                autoLoad={true}
+                fields="name,email,picture"
+                // onClick={this.login}
+                size='small'
+                textButton='Đăng nhập với Facebook'
+                cssClass= 'btn btn-primary'
+                callback={this.responseFacebook} />
+            );
+        }
 
-      return (
-        <div>
-            {fbContent}
-        </div>
-      );
+        return (
+            <div className='col-4 text-right'>
+                {fbContent}
+            </div>
+        );
     }
-  }
-  
-  export default Facebook;
+}
+
+export default Facebook;

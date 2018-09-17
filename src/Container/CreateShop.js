@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router-dom';
-import { createShop } from "../../networks/shopData";
+import { createShop } from "../networks/shopData";
+import { addShopByUser } from "../networks/userData";
 import { Container, Row, Col, InputGroup, InputGroupAddon, Input, Button, Modal, Form, ModalBody, ModalFooter } from "reactstrap";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -9,9 +10,10 @@ class CreateShop extends Component {
         shopData: {
             title: null,
             description: null,
-            owner: '5b9798e2c685d7050ecda54a'
+            owner: null
         }
     }
+
 
     handleInputChange = (e) => {
         let data = this.state.shopData;
@@ -19,16 +21,22 @@ class CreateShop extends Component {
         this.setState({
             shopData: data
         });
-        console.log(this.state.shopData)
     }
 
     handleSubmit = (e) => {
+
         e.preventDefault();
+        let data = this.state.shopData;
+        data.owner = this.props.userData._id
+        this.setState({
+            shopData: data
+        });
         createShop(this.state.shopData)
             .then(res => {
-                console.log(res.data.shopCreated._id);
-                this.props.modalShopIsOpen();
-                this.props.history.push(`/shop/${res.data.shopCreated._id}/manager`);
+                addShopByUser(this.props.userData._id)
+                
+                // this.props.modalShopIsOpen();
+                // window.location.href = `/shop/${res.data.shopCreated._id}/manager` ;
             })
     }
 
@@ -37,7 +45,7 @@ class CreateShop extends Component {
             shopData: {
                 title: null,
                 description: null,
-                owner: this.state.shopData.owner
+                owner: null
             }
         });
         this.props.modalShopIsOpen();
