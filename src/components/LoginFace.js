@@ -11,18 +11,20 @@ class Facebook extends Component {
         name: '',
         email: '',
         picture: '',
-        user: ""
+        user: "",
+        isUpdate:false
     }
     componentDidMount = () => {
         this.checkLogin();
     }
-
+    
+    
     checkLogin = () => {
         axios.defaults.withCredentials = true;
         axios.get(`${ROOT_API}/auth/isLogin`)
             .then((response) => {
                 // console.log(response)
-                if (response.data.success == 1) {
+                if (response.data.success === 1) {
                     this.setState({ isLoggedIn: 1, userID: response.data.user })
                     this.getUser()
                 }
@@ -37,7 +39,7 @@ class Facebook extends Component {
         axios.get(`${ROOT_API}/user/${this.state.userID}`)
             .then((response) => {
                 // console.log(response)
-                if (response.data.success == 1) {
+                if (response.data.success === 1) {
                     this.setState({ user: response.data.user })
                     this.props.setdata(response.data.user);
                 }
@@ -88,14 +90,14 @@ class Facebook extends Component {
 
     render() {
         let fbContent;
-        if (this.state.isLoggedIn == 1) {
+        if (this.state.isLoggedIn === 1) {
             fbContent = (
                 <div>
-                    {(this.state.isLoggedIn == 1) ? <Logined fbLogout={this.logout} userData={this.props.userData}  modalShopIsOpen={this.props.modalShopIsOpen} /> : ''}
+                    {(this.state.isLoggedIn === 1) ? <Logined fbLogout={this.logout} userData={this.props.userData}  modalShopIsOpen={this.props.modalShopIsOpen} /> : ''}
                 </div>
             );
         }
-        else if ((this.state.isLoggedIn == 2)) {
+        else if ((this.state.isLoggedIn === 2)) {
             fbContent = (<FacebookLogin
                 appId="452497568573549"
                 autoLoad={true}
