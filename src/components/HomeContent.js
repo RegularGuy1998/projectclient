@@ -33,16 +33,18 @@ class HomeContent extends Component {
     if (this.state.shops) {
       allShops = this.state.shops.map(shop => {
         // console.log(shop)
-        if (this.state.user) {
-          if(shop.owner._id===this.state.user._id){
-            return (
-              <OneShopDiv key={shop._id} shop={shop} link={shop._id+"/manager"} />
-            )
+        if(shop.openOrClose){
+          if (this.state.user) {
+            if(shop.owner._id==this.state.user._id){
+              return (
+                <OneShopDiv key={shop._id} shop={shop} link={shop._id+"/manager"} />
+              )
+            }
           }
+          return (
+            <OneShopDiv key={shop._id} shop={shop} link={shop._id} />
+          )
         }
-        return (
-          <OneShopDiv key={shop._id} shop={shop} link={shop._id} />
-        )
       })
     }
     return (
@@ -50,7 +52,7 @@ class HomeContent extends Component {
         <div className="row">
           {allShops}
         </div>
-        <ul className="pagination justify-content-center">
+        {/* <ul className="pagination justify-content-center">
           <li className="page-item">
             <a className="page-link" href="" aria-label="Previous">
               <span aria-hidden="true">«</span>
@@ -72,7 +74,7 @@ class HomeContent extends Component {
               <span className="sr-only">Next</span>
             </a>
           </li>
-        </ul>
+        </ul> */}
       </div>
 
     );

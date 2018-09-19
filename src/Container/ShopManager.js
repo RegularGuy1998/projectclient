@@ -43,7 +43,7 @@ class ShopManager extends Component {
 
     render() {
 
-        const showInfoShop = (this.state.shopDataOng) ? <InfoInShopManager shopDataBo={this.state.shopDataOng} UpdateInfo={this.UpdateInfo} /> : '';
+        const showInfoShop = (this.state.shopDataOng) ? <InfoInShopManager shopDataBo={this.state.shopDataOng} UpdateInfo={this._handleUpdateData} /> : '';
 
         
 

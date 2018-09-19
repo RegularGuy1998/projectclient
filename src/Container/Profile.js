@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Container, Row, Col,} from "reactstrap"
 import ProfileSidebar from '../components/ProfileSidebar'
 import ProfileContent from '../components/ProfileContent';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import { getInfoUserById } from "../networks/userData";
 class Profile extends Component {
 
@@ -10,7 +11,7 @@ class Profile extends Component {
     }
 
     componentDidMount() {
-        getInfoUserById(this.props.match.params.id)
+        getInfoUserById("5b9d191df7b8a613d1d6fd7f")
             .then( user => {
                 this.setState({
                     userData: user.data.user
@@ -21,12 +22,12 @@ class Profile extends Component {
     render() {
         return (
             <Container bootstrap snippet >
-                <Row className='img-thumbnail shadow p-3 mb-5 bg-white rounded mt-50 mdbColorLighten5'>
+                <Row className='img-thumbnail shadow p-3 mb-5 bg-white rounded mt-50 bg-light'>
                     <Col sm='3' className='text-center'>
                        {(this.state.userData) ?  <ProfileContent userData={this.state.userData} /> : ''}
                     </Col>
-                    <Col sm='9' className='border-left'>
-                    {(this.state.userData) ?  <ProfileSidebar userData={this.state.userData} /> : ''}
+                    <Col sm='9'>
+                        {(this.state.userData) ?  <ProfileSidebar userData={this.state.userData} /> : ''}
                     </Col>
                 </Row>
             </Container>

@@ -9,7 +9,7 @@ import {
     Link
 } from 'react-router-dom'
 import { updateInfoShopByID } from "../networks/shopData"
-import { createSession, getSession } from "../networks/session"
+import { createSession, getSession, upDateSession } from "../networks/session"
 
 class Shop extends Component {
     constructor(props) {
@@ -78,62 +78,86 @@ class Shop extends Component {
         this.inputCM.current.focus()
     }
     pushProductToCart = (e) => {
-
         if (!this.state.user) {
             alert("Bạn chưa đăng nhập")
             e.target.value = 0
         } else {
-            var name = e.target.name;
-            var amount=e.target.value;
-            //lay session ve truoc de kiem tra orderList
-            getSession()
-                .then(data => {
-                    // console.log(data.data.session)
-                    var orderListTemp = data.data.session.order ? data.data.session.order.orderList : []
-                    // console.log(orderListTemp)
-                    getProductById(name)//lay san pham duoc chon
-                        .then(data => {
-
-                            var duplicatePro = orderListTemp.filter(x => x.id === data.data.productFound._id)
-                            if (duplicatePro[0]) {
-                                 var index=orderListTemp.findIndex(x => x.id === data.data.productFound._id)
-                                if (index > -1) {
-                                    orderListTemp.splice(index, 1);
-                                }
-                                orderListTemp.push({
-                                    id: data.data.productFound._id,
-                                    shopID: {
-                                        _id: data.data.productFound.shopID._id
-                                    },
-                                    name: data.data.productFound.name,
-                                    image: data.data.productFound.image,
-                                    price: data.data.productFound.price,
-                                    amount: amount
+            if (e.target.value == 0) {
+                var name = e.target.name;
+                getSession()
+                    .then(data => {
+                        var orderListTemp = data.data.session.order ? data.data.session.order.orderList : []
+                        var onePro = orderListTemp.filter(x => x.id == name)
+                        var index = orderListTemp.findIndex(x => x.id == name)
+                        if (index > -1) {
+                            orderListTemp.splice(index, 1)
+                            upDateSession({ orderList: orderListTemp })
+                                .then(data => {
+                                    console.log(data)
+                                    this.props.changeProNu(data.data.session.order.orderList.length);
                                 })
-                            }
-                            else {
-                                orderListTemp.push({
-                                    id: data.data.productFound._id,
-                                    shopID: {
-                                        _id: data.data.productFound.shopID._id
-                                    },
-                                    name: data.data.productFound.name,
-                                    image: data.data.productFound.image,
-                                    price: data.data.productFound.price,
-                                    amount: 1
-                                })
-                            }
-                            createSession({ owner: this.state.user._id, orderList: orderListTemp })
-                                .then(data => console.log(data.data))
                                 .catch(err => console.log(err))
-                        })
-                })
-                .catch(err => console.log(err))
+                        }
+                    })
+            }
+            else {
+                var name = e.target.name;
+                var amount = e.target.value;
+                //lay session ve truoc de kiem tra orderList
+                getSession()
+                    .then(data => {
+                        // console.log(data.data.session)
+                        var orderListTemp = data.data.session.order ? data.data.session.order.orderList : []
+                        // console.log(orderListTemp)
+                        getProductById(name)//lay san pham duoc chon
+                            .then(data => {
+
+                                var duplicatePro = orderListTemp.filter(x => x.id == data.data.productFound._id)
+                                if (duplicatePro[0]) {
+                                    var index = orderListTemp.findIndex(x => x.id == data.data.productFound._id)
+                                    if (index > -1) {
+                                        orderListTemp.splice(index, 1);
+                                    }
+                                    orderListTemp.push({
+                                        product: data.data.productFound._id,
+                                        id: data.data.productFound._id,
+                                        shopID: {
+                                            _id: data.data.productFound.shopID._id
+                                        },
+                                        name: data.data.productFound.name,
+                                        image: data.data.productFound.image,
+                                        price: data.data.productFound.price,
+                                        amount: amount
+                                    })
+                                }
+                                else {
+                                    orderListTemp.push({
+                                        product: data.data.productFound._id,
+                                        id: data.data.productFound._id,
+                                        shopID: {
+                                            _id: data.data.productFound.shopID._id
+                                        },
+                                        name: data.data.productFound.name,
+                                        image: data.data.productFound.image,
+                                        price: data.data.productFound.price,
+                                        amount: 1
+                                    })
+                                }
+                                createSession({ owner: this.state.user._id, orderList: orderListTemp })
+                                    .then(data => {
+                                        console.log(data.data)
+                                        this.props.changeProNu(data.data.order.orderList.length);
+                                    })
+                                    .catch(err => console.log(err))
+                            })
+                    })
+                    .catch(err => console.log(err))
+            }
         }
     }
     submitComment = (e) => {
         e.preventDefault();
-        if (this.state.user && document.getElementsByClassName("userInputCM")[0].value !== "") {
+        if (this.state.user && document.getElementsByClassName("userInputCM")[0].value != "") {
             this.setState({
                 modal: false
             });
@@ -224,10 +248,10 @@ class Shop extends Component {
                                         <div className="avatarHost ">
                                             {this.state.shop.owner ? <img src={this.state.shop.owner.avatarUrl} /> : ""}
                                         </div>
-                                        <div className="cart mt-3">
-                                            {(this.state.shop) ? <OrderListInShop orderData={this.state.shop.listOrder} /> : ''}
+                                        {/* <div className="cart mt-3">
+                                            {(this.state.shop) ? <OrderListInShop shopID={this.state.shop._id} orderData={this.state.shop.listOrder} /> : ''}
                                             <h6 className="mt-2">Ordered in shop</h6>
-                                        </div>
+                                        </div> */}
                                     </div>
                                     <div className="mainStatus col-md-10">
                                         <h4>
@@ -238,6 +262,9 @@ class Shop extends Component {
                                         <div className="foodShop">
                                             {allProduct}
                                         </div>
+                                        <Link to={"/cart"} className="col-md-3" style={{ padding: "0" }}>
+                                            <div className="btn btn-danger" style={{ width: "100%" }} >Order ngay</div>
+                                        </Link>
                                         <div className="expressBar mt-3">
                                             <i className="far fa-heart" />
                                             <i className="far fa-comment" ref={this.comment} onClick={this.moveToInputCM} />
